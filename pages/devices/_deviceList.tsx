@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 export default function DeviceList({ deviceId, onError, isLoading}) {
   const [data, setData] = useState(null)
-  
+  const itemType = 'device'
+
   useEffect(() => {
     isLoading(true)
     fetch(`/api/devices/${deviceId || ''}`)
@@ -17,18 +18,19 @@ export default function DeviceList({ deviceId, onError, isLoading}) {
       isLoading(false)
     })
   }, [deviceId])
-  
 
+  const itemKey = item => `${item.deviceId}_${item.key}`
+  
   return (
       <dl>
       { Array.isArray(data) ?
         data.map(item => (
-          <React.Fragment key={`${item.deviceId}_${item.key}`}>
-          <dt key={`${item.deviceId}_${item.key}_deviceid`} id={'deviceId_' + item.key}>{item.deviceId}</dt>
-          <dd key={`${item.deviceId}_${item.key}_detail`}>Updated: {item.updatedAt}</dd>
+          <React.Fragment key={itemKey(item)}>
+          <dt key={`${itemKey(item)}_${itemType}`} id={`${itemKey(item)}_${itemType}`}>{item.deviceId}</dt>
+          <dd key={`${itemKey(item)}_detail`}>Updated: {item.updatedAt}</dd>
           </React.Fragment>
           )
-        ) : <p>No device data</p>
+        ) : <p>No devices</p>
       }
       </dl>
   )
