@@ -17,14 +17,15 @@ export default function DeviceList({ deviceId, onError, isLoading}) {
       isLoading(false)
     })
   }, [deviceId])
+  
 
   return (
       <dl>
       { Array.isArray(data) ?
         data.map(item => (
-          <React.Fragment key={item.key}>
-          <dt id={'deviceId_' + item.key}>{item.deviceId}</dt>
-          <dd key={item.key + '_detail'}>Updated at: {item.updatedAt}</dd>
+          <React.Fragment key={`${item.deviceId}_${item.key}`}>
+          <dt key={`${item.deviceId}_${item.key}_deviceid`} id={'deviceId_' + item.key}>{item.deviceId}</dt>
+          <dd key={`${item.deviceId}_${item.key}_detail`}>Updated: {item.updatedAt}</dd>
           </React.Fragment>
           )
         ) : <p>No device data</p>
