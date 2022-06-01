@@ -19,6 +19,7 @@ export default function DevicesCard() {
 
   return(
       <div className="card">
+        <h2>Find or register a device</h2>
         <div className="alert">
         { isLoading && <span>Loading...</span>}
         { error &&
@@ -31,7 +32,7 @@ export default function DevicesCard() {
             <input type="text" name="register_deviceId" onChange={ handleChange } />
           </label>
           <DeviceRegistrationButton deviceId={ deviceId } onError={ handleError } isLoading={ setIsLoading } />
-          <h2>Registered devices</h2>
+          <h4>Registered devices</h4>
           <DeviceList deviceId={ deviceId } isLoading={ setIsLoading } onError={ handleError }  />
         </form>
       </div>
