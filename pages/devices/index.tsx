@@ -1,40 +1,43 @@
-import React, { useState } from 'react'
-import DeviceRegistrationButton from './_deviceRegistrationButton'
-import DeviceList from './_deviceList'
+import React, { useState, useEffect } from 'react';
+import DevicesCard from './_devicesCard'
+import Device from './_device'
 
-export default function DevicesCard() {
-  const [deviceId, setDeviceId] = useState('')
-  const [error, setError] = useState('')
+export default function Devices() {
+  const [ device, setDevice ] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [deviceData, setDeviceData] = useState<any[] | null>(null)
 
-  function handleChange(event) {
-    setError('')
-    setDeviceId(event.target.value)
+  function handleSelectDevice(selected: any) {
+    setDevice(selected)
+    getDeviceData(selected.deviceId)
   }
 
-  function handleError(error) {
-    console.log(error)
-    setError(error)
+  function getDeviceData(deviceId: string) {
+    setIsLoading(true)
+    setError(null)
+    fetch(`/api/data/${deviceId || ''}`)
+    .then((res) => {
+      if(res.ok) {
+        const json = res.json()
+        Array.isArray(json) && setDeviceData(json)
+        setIsLoading(false)
+      } else {
+        setError(res.statusText)
+        setIsLoading(false)
+      }
+    })
   }
 
-  return(
-      <div className="card">
-        <h2>Find or register a device</h2>
-        <div className="alert">
-        { isLoading && <span>Loading...</span>}
-        { error &&
-          <span className="alert-danger">{ error }</span>
-        }
-        </div>
-        <form>
-          <label>
-            Device ID:
-            <input type="text" name="register_deviceId" onChange={ handleChange } />
-          </label>
-          <DeviceRegistrationButton deviceId={ deviceId } onError={ handleError } isLoading={ setIsLoading } />
-          <h4>Registered devices</h4>
-          <DeviceList deviceId={ deviceId } isLoading={ setIsLoading } onError={ handleError }  />
-        </form>
-      </div>
+  return (
+    <>
+      { device ?
+          <div>
+            <DevicesCard onSelectDevice={ handleSelectDevice } />
+            <Device device={device} deviceData={deviceData} error={error} isLoading />
+          </div>
+          : <DevicesCard onSelectDevice={ handleSelectDevice } />
+      }
+    </>
   )
 }

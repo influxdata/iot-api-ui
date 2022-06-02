@@ -1,6 +1,9 @@
 import React from 'react'
 
-export default function DeviceRegistrationButton({ deviceId, onError, isLoading}) {
+export default function DeviceRegistrationButton({ deviceId, onError, isLoading}:
+  { deviceId: string, onError: (error: string) => void,
+    isLoading: (loading: boolean) => void }
+  ) {
 
   function handleRegister() {
     isLoading(true)
