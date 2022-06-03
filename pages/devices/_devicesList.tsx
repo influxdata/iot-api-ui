@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 export default function DevicesList({ deviceId, onSelectDevice, onError, isLoading}: 
-    { deviceId: string, onSelectDevice: (device: any) => void,
+    { deviceId: string, onSelectDevice: (device: {deviceId: string}) => void,
     onError: (error: string) => void, isLoading: (loading: boolean) => void }
   ) {
   const [data, setData] = useState<any[] | null>(null)
@@ -9,7 +9,7 @@ export default function DevicesList({ deviceId, onSelectDevice, onError, isLoadi
 
   useEffect(() => {
     isLoading(true)
-    fetch(`/api/devices/${deviceId || ''}`)
+    fetch(`/api/devices/${deviceId  || '' }`)
     .then((res) => res.json())
     .then((data) => {
       if(Array.isArray(data)) {

@@ -9,7 +9,11 @@ export default function DeviceRegistrationButton({ deviceId, onError, isLoading}
     isLoading(true)
     const body = JSON.stringify({ deviceId })
 
-    fetch('/api/devices/create', { method: 'POST', body })
+    fetch('/api/devices/create', {
+      method: 'POST',
+      body,
+      headers: { "Content-Type": "application/json" }
+    })
       .then((res) => res.json())
       .then((data) => {
         if(data.error) {

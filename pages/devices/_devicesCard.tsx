@@ -3,7 +3,7 @@ import DeviceRegistrationButton from './_deviceRegistrationButton'
 import DevicesList from './_devicesList'
 
 export default function DevicesCard({ onSelectDevice }:
-  { onSelectDevice: (device: any) => void}
+  { onSelectDevice: (device: {deviceId: string}) => void }
   ) {
   const [deviceId, setDeviceId] = useState('')
   const [error, setError] = useState<string | null>(null)
