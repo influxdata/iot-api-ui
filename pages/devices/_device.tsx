@@ -6,38 +6,59 @@ import dynamic from 'next/dynamic'
  * with Node.
  */
 const DynamicDevicePlotWithNoSSR = dynamic(
-  () => import('./_devicePlot'),
+  () => import('./_devicePlot').then(mod => mod.DevicePlot),
   { ssr: false }
 )
 
-export default function Device({ deviceId }: {deviceId: string}) {
+export function Device({deviceId}: {deviceId: string | string[]}) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [device, setDevice] = useState<any[] | null>(null)
-  const [data, setData] = useState<any | null>(null)
+  const [data, setData] = useState<string[] | []>([])
+  deviceId = Array.isArray(deviceId) ? deviceId[0] : deviceId
 
-  const getDeviceData = (deviceId: string) => {
-    setIsLoading(true)
-    setError(null)
-    fetch(`/api/devices/${deviceId}/measurements`,
-          { headers: { "Accept": "application/csv" } }
+  useEffect(() => {
+    deviceId && getDevice()
+  }, [deviceId])
+
+  useEffect(() => {
+    if(!device) {
+      return
+    }
+    const results: string[] = []
+    const fields  = ['Humidity', 'Pressure', 'Temperature']
+    fields.forEach(field => {
+      getDeviceData(field)
+      .then(res => {
+        if(res.ok) {
+          return res.text()
+        } else {
+          setError(`${field} error: ${res.statusText}`)
+          return ''
+        }
+      })
+      .then(text => {
+        results.push(text)
+        setData(results)
+      })
+    })
+  }, [deviceId])
+
+  function getMeasurementsQuery(field: string) {
+    return (
+      `from(bucket: "${process.env.NEXT_PUBLIC_INFLUX_BUCKET}")
+       |> range(start: -60d)
+       |> filter(fn: (r) => r._measurement == "environment" and r.device == "${deviceId}" )
+       |> filter(fn: (r) => r._field == "${field}" )
+       |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+       |> yield(name: "mean")
+       `
     )
-    .then((res) => {
-      if(res.ok) {
-        return res.text()
-      } else {
-        setError(`Device data ${res.statusText}`)
-        setIsLoading(false)
-      }
-    })
-    .then((data) =>{
-      setData(data)
-      setIsLoading(false)
-    })
   }
-  
-  const getDevice = (deviceId: string) => {
+
+  const getDevice = () => {
     setIsLoading(true)
+    
     fetch(`/api/devices/${deviceId}`)
     .then((res) => res.json())
     .then((data) => {
@@ -51,11 +72,16 @@ export default function Device({ deviceId }: {deviceId: string}) {
     })
   }
 
-  useEffect(() => {
-    deviceId &&
-    getDevice(deviceId)
-    getDeviceData(deviceId)
-  }, [deviceId])
+  const getDeviceData = (field: string) => {
+    setIsLoading(true)
+    return (
+      fetch(`/api/devices/${deviceId}/measurements`,
+          { method: 'POST',
+            headers: { 'Accept': 'application/csv', 'Content-Type': 'application/json'},
+            body: JSON.stringify({ query: getMeasurementsQuery(field) })
+          })
+    )
+  }
 
   function writeSimulatedData() {
     fetch('/api/devices/generate', {
@@ -64,30 +90,29 @@ export default function Device({ deviceId }: {deviceId: string}) {
       headers: { "Content-Type": "application/json" }
     })
     .then((res) => {
-      if(res.ok) {
-        getDeviceData(deviceId)
-      } else {
-        setError(res.statusText)
+      if(!res.ok) {
+        setError(`Writing data: ${res.statusText}`)
       }
     })
-
   }
 
   return (
-    deviceId ?
-      <div className='card'>
+      <div>
         <div className="alert">
         { isLoading && <span>Loading...</span> }
         { error &&
           <span className="alert-danger">{ error }</span>
         }
         </div>
-        <h2>Device</h2>
-          <p>{deviceId}</p>
-          <p><button onClick={ writeSimulatedData }>Generate data for this device</button></p>
-          { data &&
-            <div><DynamicDevicePlotWithNoSSR csv={data} title={'Measurements'} lastUpdated={''} /></div>
-          }     
-      </div> : <></>
+        <h5>Device</h5>
+        <h4>{deviceId}</h4>
+        <p><button onClick={ writeSimulatedData }>Generate data for this device</button></p>
+        {data.map((csv, i) =>
+          <div className='card'>
+            <div key={`${i}-line`}><DynamicDevicePlotWithNoSSR csv={csv} plot='line' /></div>
+            <div key={`${i}-table`}><DynamicDevicePlotWithNoSSR csv={csv} plot='table' /></div>
+          </div>
+      )}     
+      </div>
   )
 }

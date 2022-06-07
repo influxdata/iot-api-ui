@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link'
 
-export default function DevicesList({ deviceId, onSelectDevice, onError, isLoading}: 
-    { deviceId: string, onSelectDevice: (device: {deviceId: string}) => void,
-    onError: (error: string) => void, isLoading: (loading: boolean) => void }
+export function DevicesList({deviceId, onError, isLoading}: 
+    {deviceId: string | [],
+    onError: (error: string) => void,
+    isLoading: (loading: boolean) => void}
   ) {
   const [data, setData] = useState<any[] | null>(null)
+  const [selected, setSelected] = useState<any>(null)
   const itemType = 'device'
 
   useEffect(() => {
@@ -27,20 +30,34 @@ export default function DevicesList({ deviceId, onSelectDevice, onError, isLoadi
   function localTime(time: any) {
     const date = new Date(time)
     return date.toLocaleString()
-  } 
+  }
+
+  function handleSelectDevice(device: any) {
+    setSelected(device)
+  }
   
   return (
-      <dl>
+      <ul className='list-group vh-100 overflow-scroll'>
       { Array.isArray(data) ?
         data.map(item => (
           <React.Fragment key={itemKey(item)}>
-            <dt key={`${itemKey(item)}_${itemType}`} id={`${itemKey(item)}_${itemType}`}
-                onClick={() => onSelectDevice(item)}>{item.deviceId}</dt>
-            <dd key={`${itemKey(item)}_detail`}>{ `Last updated: ${localTime(item.updatedAt)}` }</dd>
+            <li className={`list-group-item d-flex justify-content-between align-items-start 
+                            ${(item?.deviceId && selected?.deviceId)
+                              && (item.deviceId === selected.deviceId)
+                              && 'active'}`}
+                key={`${itemKey(item)}_${itemType}`}>
+               <div className="ms-2 me-auto">
+                 <div className="fw-bold">
+                   <Link className="btn btn-primary" href={`/devices/${encodeURIComponent(item.deviceId)}`}>
+                   {item.deviceId || 'Unknown ID'}</Link>
+                 </div>
+                 <p>{ `Updated: ${localTime(item.updatedAt)}` }</p>
+               </div>
+            </li>
           </React.Fragment>
           )
         ) : <p>No devices found</p>
       }
-      </dl>
+      </ul>
   )
 }

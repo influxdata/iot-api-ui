@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
 import DeviceRegistrationButton from './_deviceRegistrationButton'
-import DevicesList from './_devicesList'
+import {DevicesList} from './_devicesList'
 
-export default function DevicesCard({ onSelectDevice }:
-  { onSelectDevice: (device: {deviceId: string}) => void }
-  ) {
+export function DevicesCard() {
   const [deviceId, setDeviceId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -20,22 +18,23 @@ export default function DevicesCard({ onSelectDevice }:
   }
 
   return(
-      <div className="card">
-        <h2>Find or register a device</h2>
-        <div className="alert">
-        { isLoading && <span>Loading...</span>}
-        { error &&
-          <span className="alert-danger">{ error }</span>
-        }
-        </div>
-        <form>
-          <label>
-            Device ID:
-            <input type="text" name="register_deviceId" onChange={ handleChange } />
+      <div className='card'>
+        <h5 className='card-title' >Find or register a device</h5>
+        <form className='card-body'>
+          <label htmlFor='findOrRegisterDevice_IdInput' className="form-label">
+            Device ID
           </label>
+          <input type="text" id='findOrRegisterDevice_IdInput' name="register_deviceId" className="form-control" onChange={ handleChange } />
           <DeviceRegistrationButton deviceId={ deviceId } onError={ handleError } isLoading={ setIsLoading } />
           <h4>Registered devices</h4>
-          <DevicesList onSelectDevice={ onSelectDevice } deviceId={ deviceId } isLoading={ setIsLoading } onError={ handleError }  />
+          { isLoading && 
+            <div className="alert"><span>Loading...</span></div>
+          }
+          { error &&
+            <div className="alert-danger">{ error }</div>
+          }
+          <DevicesList deviceId={ deviceId } isLoading={ setIsLoading } onError={ handleError }  />
+
         </form>
       </div>
   )
