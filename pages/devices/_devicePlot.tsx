@@ -7,12 +7,13 @@ const style = {
 }
 
 export function DevicePlot(
-  { csv, plot }:
-  { csv: string, plot: 'line' | 'table', title: string})
+  { csv, plot, title }:
+  { csv: string, plot: 'line' | 'table', title?: string})
 {
   const csvData = csv?.trim() || ''
   const tableData = fromFlux(csvData).table || undefined
-  const title = tableData.getColumn('_field') || ''
+  let field = tableData.getColumn('_field')
+  const fieldTitle = Array.isArray(field) ? field[0] : ''
   const layer : { line: () => LayerConfig, table: () => LayerConfig, } = {
     line: () =>  ({
                     type: LayerTypes.Line,
@@ -27,13 +28,11 @@ export function DevicePlot(
                     showAll: false,
                   })
   }
-  //console.log(csv)
-  //console.log(csvData)
-  //console.log(tableData)
+
   return (
     <div>
       <div style={style}>
-        { title && <h3>{title}</h3> }
+        <h3>{title || fieldTitle}</h3>
         {tableData && csvData && layer[plot] && <Plot config={{
                             fluxResponse: csvData,
                             table: tableData,

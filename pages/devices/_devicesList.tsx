@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import Link from 'next/link'
+import {useRouter} from 'next/router'
 
-export function DevicesList({deviceId, onError, isLoading}: 
-    {deviceId: string | [],
+export function DevicesList({listFilter, onError, isLoading}: 
+    {listFilter: string | [],
     onError: (error: string) => void,
-    isLoading: (loading: boolean) => void}
-  ) {
+    isLoading: (loading: boolean) => void})
+{
   const [data, setData] = useState<any[] | null>(null)
-  const [selected, setSelected] = useState<any>(null)
   const itemType = 'device'
+  const router = useRouter()
+  const deviceId = router.query['deviceId'] || ''
+  const itemKey = (item: any) => `${item.deviceId}_${item.key}`
 
   useEffect(() => {
     isLoading(true)
-    fetch(`/api/devices/${deviceId  || '' }`)
+    fetch(`/api/devices/${listFilter || '' }`)
     .then((res) => res.json())
     .then((data) => {
       if(Array.isArray(data)) {
@@ -23,41 +26,41 @@ export function DevicesList({deviceId, onError, isLoading}:
       }
       isLoading(false)
     })
-  }, [deviceId])
+  }, [listFilter])
 
-  const itemKey = (item: any) => `${item.deviceId}_${item.key}`
-  
   function localTime(time: any) {
     const date = new Date(time)
     return date.toLocaleString()
   }
 
-  function handleSelectDevice(device: any) {
-    setSelected(device)
-  }
-  
+  const style = `
+    .link-
+  `
   return (
       <ul className='list-group vh-100 overflow-scroll'>
       { Array.isArray(data) ?
-        data.map(item => (
-          <React.Fragment key={itemKey(item)}>
+          data.map((item, i) => (
             <li className={`list-group-item d-flex justify-content-between align-items-start 
-                            ${(item?.deviceId && selected?.deviceId)
-                              && (item.deviceId === selected.deviceId)
-                              && 'active'}`}
-                key={`${itemKey(item)}_${itemType}`}>
-               <div className="ms-2 me-auto">
-                 <div className="fw-bold">
-                   <Link className="btn btn-primary" href={`/devices/${encodeURIComponent(item.deviceId)}`}>
-                   {item.deviceId || 'Unknown ID'}</Link>
-                 </div>
-                 <p>{ `Updated: ${localTime(item.updatedAt)}` }</p>
-               </div>
+                            ${deviceId.includes(item.deviceId) && 'active'}`}
+                key={`${itemKey(item)}${i}`}>
+                <div className="ms-2 me-auto">
+                  <div className="fw-bold">
+                    {deviceId.includes(item.deviceId) ?
+                      (item.deviceId || 'Unknown ID') :
+                      <Link href={`/devices/${encodeURIComponent(item.deviceId)}`}>
+                          <button className='btn btn-primary'>
+                              {item.deviceId || 'Unknown ID'}
+                            </button>
+                      </Link>
+                    }
+                  </div>
+                  <small className='mt-1'>{`Updated: ${localTime(item.updatedAt)}`}</small>
+                </div>
             </li>
-          </React.Fragment>
-          )
+            )
         ) : <p>No devices found</p>
       }
       </ul>
   )
 }
+

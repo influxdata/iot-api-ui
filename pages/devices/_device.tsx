@@ -22,13 +22,19 @@ export function Device({deviceId}: {deviceId: string | string[]}) {
   }, [deviceId])
 
   useEffect(() => {
+    getFieldData()
+  }, [deviceId])
+
+  function getFieldData() {
     if(!device) {
       return
     }
+    setError(null)
+    setIsLoading(true)
     const results: string[] = []
     const fields  = ['Humidity', 'Pressure', 'Temperature']
     fields.forEach(field => {
-      getDeviceData(field)
+      getMeasurements(field)
       .then(res => {
         if(res.ok) {
           return res.text()
@@ -39,26 +45,15 @@ export function Device({deviceId}: {deviceId: string | string[]}) {
       })
       .then(text => {
         results.push(text)
+        console.log(results)
         setData(results)
+        setIsLoading(false)
       })
     })
-  }, [deviceId])
-
-  function getMeasurementsQuery(field: string) {
-    return (
-      `from(bucket: "${process.env.NEXT_PUBLIC_INFLUX_BUCKET}")
-       |> range(start: -60d)
-       |> filter(fn: (r) => r._measurement == "environment" and r.device == "${deviceId}" )
-       |> filter(fn: (r) => r._field == "${field}" )
-       |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
-       |> yield(name: "mean")
-       `
-    )
   }
 
   const getDevice = () => {
     setIsLoading(true)
-    
     fetch(`/api/devices/${deviceId}`)
     .then((res) => res.json())
     .then((data) => {
@@ -72,13 +67,20 @@ export function Device({deviceId}: {deviceId: string | string[]}) {
     })
   }
 
-  const getDeviceData = (field: string) => {
-    setIsLoading(true)
+  const getMeasurements = (field: string) => {
+    const query =
+        `from(bucket: "${process.env.NEXT_PUBLIC_INFLUX_BUCKET}")
+         |> range(start: -60d)
+         |> filter(fn: (r) => r._measurement == "environment" and r.device == "${deviceId}" )
+         |> filter(fn: (r) => r._field == "${field}" )
+         |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+         |> yield(name: "mean")
+         `
     return (
       fetch(`/api/devices/${deviceId}/measurements`,
           { method: 'POST',
             headers: { 'Accept': 'application/csv', 'Content-Type': 'application/json'},
-            body: JSON.stringify({ query: getMeasurementsQuery(field) })
+            body: JSON.stringify({ query })
           })
     )
   }
@@ -93,6 +95,7 @@ export function Device({deviceId}: {deviceId: string | string[]}) {
       if(!res.ok) {
         setError(`Writing data: ${res.statusText}`)
       }
+      getFieldData()
     })
   }
 
@@ -105,10 +108,12 @@ export function Device({deviceId}: {deviceId: string | string[]}) {
         }
         </div>
         <h5>Device</h5>
-        <h4>{deviceId}</h4>
-        <p><button onClick={ writeSimulatedData }>Generate data for this device</button></p>
+        {device && <h4>{deviceId}</h4>}
+        {device &&
+          <p><button onClick={ writeSimulatedData }>Generate data for this device</button></p>
+        }
         {data.map((csv, i) =>
-          <div className='card'>
+          <div className='card-body'>
             <div key={`${i}-line`}><DynamicDevicePlotWithNoSSR csv={csv} plot='line' /></div>
             <div key={`${i}-table`}><DynamicDevicePlotWithNoSSR csv={csv} plot='table' /></div>
           </div>
