@@ -115,7 +115,7 @@ export function Device({deviceId}: {deviceId: string | string[]}) {
         {data.map((csv, i) =>
           <div className='card-body'>
             <div key={`${i}-line`}><DynamicDevicePlotWithNoSSR csv={csv} plot='line' /></div>
-            <div key={`${i}-table`}><DynamicDevicePlotWithNoSSR csv={csv} plot='table' /></div>
+            <div key={`${i}-table`}><DynamicDevicePlotWithNoSSR csv={csv} plot='table' title='' /></div>
           </div>
       )}     
       </div>

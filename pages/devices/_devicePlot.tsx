@@ -32,7 +32,7 @@ export function DevicePlot(
   return (
     <div>
       <div style={style}>
-        <h3>{title || fieldTitle}</h3>
+        <h3>{title === '' ? '' : (title || fieldTitle)}</h3>
         {tableData && csvData && layer[plot] && <Plot config={{
                             fluxResponse: csvData,
                             table: tableData,
