@@ -34,7 +34,6 @@ export function DevicesCard() {
             <div className="alert-danger">{ error }</div>
           }
           <DevicesList listFilter={ deviceId } isLoading={ setIsLoading } onError={ handleError }  />
-
         </form>
       </div>
   )
