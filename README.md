@@ -2,7 +2,7 @@
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) and
 customized to route `/api` requests to external middleware -
-specifically the InfluxData `iot-app-` example applications.
+specifically, the InfluxData `iot-app-<js, python, etc.>` example applications.
 
 ## Start the Next.js frontend app
 
