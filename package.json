@@ -11,7 +11,7 @@
   "dependencies": {
     "@influxdata/giraffe": "^2.38.1",
     "bootstrap": "^5.3.3",
-    "next": "^14.2.35",
+    "next": "^16.1.5",
     "postcss": "^8.4.31",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
