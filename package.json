@@ -12,7 +12,7 @@
     "@influxdata/giraffe": "^2.38.1",
     "bootstrap": "^5.3.3",
     "next": "^16.2.3",
-    "postcss": "^8.4.31",
+    "postcss": "^8.5.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -25,6 +25,6 @@
     "typescript": "4.7.2"
   },
   "resolutions": {
-    "postcss": "^8.4.31"
+    "postcss": "^8.5.10"
   }
 }
